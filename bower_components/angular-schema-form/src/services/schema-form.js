@@ -40,8 +40,15 @@ angular.module('schemaForm').provider('schemaForm',
       var def;
       for (var i = 0; i < rules.length; i++) {
         def = rules[i](name, schema, options);
+
         //first handler in list that actually returns something is our handler!
         if (def) {
+
+          // Do we have form defaults in the schema under the x-schema-form-attribute?
+          if (def.schema['x-schema-form'] && angular.isObject(def.schema['x-schema-form'])) {
+            def = angular.extend(def, def.schema['x-schema-form']);
+          }
+
           return def;
         }
       }
@@ -67,19 +74,21 @@ angular.module('schemaForm').provider('schemaForm',
     if (schema.minimum) { f.minimum = schema.minimum + (schema.exclusiveMinimum ? 1 : 0); }
     if (schema.maximum) { f.maximum = schema.maximum - (schema.exclusiveMaximum ? 1 : 0); }
 
-    //Non standard attributes
+    // Non standard attributes (DONT USE DEPRECATED)
+    // If you must set stuff like this in the schema use the x-schema-form attribute
     if (schema.validationMessage) { f.validationMessage = schema.validationMessage; }
-    if (schema.enumNames) { f.titleMap = canonicalTitleMap(schema.enumNames, schema.enum); }
+    if (schema.enumNames) { f.titleMap = canonicalTitleMap(schema.enumNames, schema['enum']); }
     f.schema = schema;
 
     // Ng model options doesn't play nice with undefined, might be defined
     // globally though
     f.ngModelOptions = f.ngModelOptions || {};
+
     return f;
   };
 
   var text = function(name, schema, options) {
-    if (schema.type === 'string' && !schema.enum) {
+    if (schema.type === 'string' && !schema['enum']) {
       var f = stdFormObj(name, schema, options);
       f.key  = options.path;
       f.type = 'text';
@@ -121,12 +130,12 @@ angular.module('schemaForm').provider('schemaForm',
   };
 
   var select = function(name, schema, options) {
-    if (schema.type === 'string' && schema.enum) {
+    if (schema.type === 'string' && schema['enum']) {
       var f = stdFormObj(name, schema, options);
       f.key  = options.path;
       f.type = 'select';
       if (!f.titleMap) {
-        f.titleMap = enumToTitleMap(schema.enum);
+        f.titleMap = enumToTitleMap(schema['enum']);
       }
       options.lookup[sfPathProvider.stringify(options.path)] = f;
       return f;
@@ -134,12 +143,12 @@ angular.module('schemaForm').provider('schemaForm',
   };
 
   var checkboxes = function(name, schema, options) {
-    if (schema.type === 'array' && schema.items && schema.items.enum) {
+    if (schema.type === 'array' && schema.items && schema.items['enum']) {
       var f = stdFormObj(name, schema, options);
       f.key  = options.path;
       f.type = 'checkboxes';
       if (!f.titleMap) {
-        f.titleMap = enumToTitleMap(schema.items.enum);
+        f.titleMap = enumToTitleMap(schema.items['enum']);
       }
       options.lookup[sfPathProvider.stringify(options.path)] = f;
       return f;
@@ -147,7 +156,6 @@ angular.module('schemaForm').provider('schemaForm',
   };
 
   var fieldset = function(name, schema, options) {
-
     if (schema.type === 'object') {
       var f   = stdFormObj(name, schema, options);
       f.type  = 'fieldset';
@@ -187,7 +195,7 @@ angular.module('schemaForm').provider('schemaForm',
       options.lookup[sfPathProvider.stringify(options.path)] = f;
 
       var required = schema.required &&
-                     schema.required.indexOf(options.path(options.path.length - 1)) !== -1;
+                     schema.required.indexOf(options.path[options.path.length - 1]) !== -1;
 
       // The default is to always just create one child. This works since if the
       // schemas items declaration is of type: "object" then we get a fieldset.
@@ -201,7 +209,8 @@ angular.module('schemaForm').provider('schemaForm',
         path: arrPath,
         required: required || false,
         lookup: options.lookup,
-        ignore: options.ignore
+        ignore: options.ignore,
+        global: options.global
       })];
 
       return f;
@@ -281,23 +290,27 @@ angular.module('schemaForm').provider('schemaForm',
 
     var service = {};
 
-    service.merge = function(schema, form, ignore, options) {
+    service.merge = function(schema, form, ignore, options, readonly) {
       form  = form || ['*'];
       options = options || {};
 
+      // Get readonly from root object
+      readonly = readonly || schema.readonly || schema.readOnly;
+
       var stdForm = service.defaults(schema, ignore, options);
+
       //simple case, we have a "*", just put the stdForm there
       var idx = form.indexOf('*');
       if (idx !== -1) {
         form  = form.slice(0, idx)
                     .concat(stdForm.form)
                     .concat(form.slice(idx + 1));
-        return form;
       }
 
       //ok let's merge!
       //We look at the supplied form and extend it with schema standards
       var lookup = stdForm.lookup;
+
       return postProcessFn(form.map(function(obj) {
 
         //handle the shortcut with just a name
@@ -328,24 +341,30 @@ angular.module('schemaForm').provider('schemaForm',
           });
         }
 
+        //extend with std form from schema.
+
+        if (obj.key) {
+          var strid = sfPathProvider.stringify(obj.key);
+          if (lookup[strid]) {
+            obj = angular.extend(lookup[strid], obj);
+          }
+        }
+
+        // Are we inheriting readonly?
+        if (readonly === true) { // Inheriting false is not cool.
+          obj.readonly = true;
+        }
+
         //if it's a type with items, merge 'em!
         if (obj.items) {
-          obj.items = service.merge(schema, obj.items, ignore);
+          obj.items = service.merge(schema, obj.items, ignore, options, obj.readonly);
         }
 
         //if its has tabs, merge them also!
         if (obj.tabs) {
           angular.forEach(obj.tabs, function(tab) {
-            tab.items = service.merge(schema, tab.items, ignore);
+            tab.items = service.merge(schema, tab.items, ignore, options, obj.readonly);
           });
-        }
-
-        //extend with std form from schema.
-        if (obj.key) {
-          var str = sfPathProvider.stringify(obj.key);
-          if (lookup[str]) {
-            obj = angular.extend(lookup[str], obj);
-          }
         }
 
         // Special case: checkbox

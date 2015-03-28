@@ -40,29 +40,6 @@ angular.module('schemaForm').provider('schemaFormDecorators',
           scope: true,
           require: '?^sfSchema',
           link: function(scope, element, attrs, sfSchema) {
-            //rebind our part of the form to the scope.
-            var once = scope.$watch(attrs.form, function(form) {
-
-              if (form) {
-                scope.form  = form;
-
-                //ok let's replace that template!
-                //We do this manually since we need to bind ng-model properly and also
-                //for fieldsets to recurse properly.
-                var url = templateUrl(name, form);
-                $http.get(url, {cache: $templateCache}).then(function(res) {
-                  var key = form.key ?
-                            sfPathProvider.stringify(form.key).replace(/"/g, '&quot;') : '';
-                  var template = res.data.replace(
-                    /\$\$value\$\$/g,
-                    'model' + (key[0] !== '[' ? '.' : '') + key
-                  );
-                  element.html(template);
-                  $compile(element.contents())(scope);
-                });
-                once();
-              }
-            });
 
             //Keep error prone logic from the template
             scope.showTitle = function() {
@@ -145,7 +122,7 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                   return scope.form.validationMessage[schemaError.code] ||
                          scope.form.validationMessage['default'];
                 } else {
-                  return scope.form.validationMessage.required ||
+                  return scope.form.validationMessage.number ||
                          scope.form.validationMessage['default'] ||
                          scope.form.validationMessage;
                 }
@@ -156,10 +133,53 @@ angular.module('schemaForm').provider('schemaFormDecorators',
                 return schemaError.message; //use tv4.js validation message
               }
 
-              //Otherwise we only use required so it must be it.
-              return 'Required';
-
+              //Otherwise we only have input number not being a number
+              return 'Not a number';
             };
+
+            // Rebind our part of the form to the scope.
+            var once = scope.$watch(attrs.form, function(form) {
+              if (form) {
+                // Workaround for 'updateOn' error from ngModelOptions
+                // see https://github.com/Textalk/angular-schema-form/issues/255
+                // and https://github.com/Textalk/angular-schema-form/issues/206
+                form.ngModelOptions = form.ngModelOptions || {};
+                scope.form  = form;
+
+                //ok let's replace that template!
+                //We do this manually since we need to bind ng-model properly and also
+                //for fieldsets to recurse properly.
+                var url = templateUrl(name, form);
+                $http.get(url, {cache: $templateCache}).then(function(res) {
+                  var key = form.key ?
+                            sfPathProvider.stringify(form.key).replace(/"/g, '&quot;') : '';
+                  var template = res.data.replace(
+                    /\$\$value\$\$/g,
+                    'model' + (key[0] !== '[' ? '.' : '') + key
+                  );
+                  element.html(template);
+
+                  // Do we have a condition? Then we slap on an ng-if on all children,
+                  // but be nice to existing ng-if.
+                  if (form.condition) {
+                    angular.forEach(element.children(),function(child) {
+                      var ngIf = child.getAttribute('ng-if');
+                      child.setAttribute(
+                        'ng-if',
+                        ngIf ?
+                        '(' + ngIf +
+                        ') || (evalExpr(form.condition,{ model: model, "arrayIndex": arrayIndex }))'
+                        : 'evalExpr(form.condition,{ model: model, "arrayIndex": arrayIndex })'
+                      );
+                    });
+                  }
+
+                  $compile(element.contents())(scope);
+                });
+
+                once();
+              }
+            });
           }
         };
       }
