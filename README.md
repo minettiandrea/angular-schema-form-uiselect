@@ -68,6 +68,7 @@ persons_list: {
   ]
 }
 ```
+The demo form is loaded from Light Framework Server as it is persisted in graph database. The source code can be found [here](https://github.com/networknt/light/blob/master/server/src/main/resources/form/com.networknt.light.demo.uiselect_d.json).
 
 Options
 -------
