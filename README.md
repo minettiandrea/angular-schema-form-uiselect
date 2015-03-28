@@ -6,11 +6,11 @@ This ui-select add-on uses as the name implies the ui-select plugin to provide a
 Installation
 ------------
 The editor is an add-on to the Bootstrap decorator. To use it, just include
-`schema-form-uiselect.min.js`.
+`bootstrape-uiselect.min.js`.
 
 Easiest way is to install is with bower, this will also include dependencies:
 ```bash
-$ bower install chengz/schema-form-uiselect
+$ bower install angular-schema-form-uiselect
 ```
 
 You'll need to load a few additional files to use the editor:
@@ -34,13 +34,12 @@ Example
 When you create your module, be sure to depend on this project's module as well.
 
 ```javascript
-angular.module('yourModule', ['schemaForm', 'schemaForm-uiselect']);
+angular.module('yourModule', ['schemaForm']);
 ```
 
 Usage
 -----
-The add-on adds a new form type, `uiselect`, and a new default
-mapping.
+The add-on adds a new form type, `uiselect`, and a new default mapping.
 
 | Schema             |   Default Form type  |
 |:-------------------|:------------:|
@@ -72,7 +71,9 @@ persons_list: {
 
 Options
 -------
-The add-on provides only one option to specify a class for select
+The add-on provides some of the options available in ui-select: 
+
+* To specify a class for select
 ```javascript
 {
   key: 'person_list',

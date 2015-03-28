@@ -1,12 +1,14 @@
 {
-  "name": "schema-form-uiselect",
+  "name": "angular-schema-form-uiselect",
   "main": [
-    "schema-form-uiselect.min.js"
+    "ui-sortable.js",
+    "angular-underscore.js",
+    "bootstrap-uiselect.min.js"
   ],
   "version": "0.1.0",
   "authors": [
-    "Cheng Zhu",
-    "Cheng Zhu<cheng@aqmin.com>"
+    "Cheng Zhu<cheng@aqmin.com>",
+    "Steve Hu <stevehu@gmail.com>"
   ],
   "moduleType": [
     "globals"
@@ -17,7 +19,10 @@
     "form",
     "json",
     "json-schema",
-    "schema"
+    "schema",
+    "ui-select",
+    "angular-ui-select",
+    "angular-schmea-form-uiselect"
   ],
   "license": "MIT",
   "ignore": [

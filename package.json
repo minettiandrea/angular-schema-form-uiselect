@@ -1,5 +1,5 @@
 {
-  "name": "schema-form-uiselect",
+  "name": "angular-schema-form-uiselect",
   "version": "0.1.0",
   "description": "ui-select add-on for schema form",
   "scripts": {
@@ -16,6 +16,7 @@
     "gulp-jscs": "^1.1.0",
     "gulp-minify-html": "^0.1.1",
     "gulp-uglify": "^0.2.1",
+    "gulp-webserver": "^0.9.0",
     "karma": "^0.12.23",
     "karma-chai-sinon": "^0.1.3",
     "karma-chrome-launcher": "^0.1.4",
@@ -30,5 +31,8 @@
     "sinon": "^1.9.0",
     "sinon-chai": "^2.5.0",
     "streamqueue": "0.0.5"
+  },
+  "dependencies": {
+    "gulp-webserver": "^0.9.0"
   }
 }
