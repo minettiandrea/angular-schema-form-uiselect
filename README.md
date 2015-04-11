@@ -84,3 +84,42 @@ The add-on provides some of the options available in ui-select:
   }
 }
 ```
+* To use the tagging feature of ui select (allowing new values to be added) - see full description [here](https://github.com/angular-ui/ui-select/wiki/ui-select)
+```javascript
+{
+  key: 'person_list',
+  placeholder: 'Some Place Holder', //default will translate placeholder.select
+  options : {
+          tagging: tagFunction ,
+          taggingLabel: '(new)',
+          taggingTokens: 'SPACE|ENTER|,'
+  }
+}
+```
+
+* To use the grouping feature of ui-select the grouping attribute or function can be declared like this. 
+* Note that at the present time grouping is not supported at the same time as tagging as there is a bug in the ui select library.
+
+```javascript
+     {
+       key: 'another',
+       options:{
+          groupBy : 'label', //Add the name of the attribute here
+       }
+     }
+```
+
+* If a description field is declared in the schema then this will be shown in the drop-down list. 
+
+* searchDescriptions can be turned on and off - for example:
+  - If description is provided for context, search may not be desirable due to short / common words / repetition between items.
+  - If the description is used for synonyms of the label, search is necessary.
+
+```javascript
+     {
+       key: 'another',
+       options:{
+          searchDescriptions : true
+       }
+     }
+```
