@@ -64,7 +64,7 @@ angular.module('schemaForm').config(
             $scope.$parent.ngModel.$setViewValue($scope.$parent.select_model.selected.value);
           }
         });
-      }],
+      }]
     };
   })
   .directive("toggleModel", function() {
@@ -91,7 +91,7 @@ angular.module('schemaForm').config(
             $scope.$parent.ngModel.$setViewValue($scope.$parent.form.select_models);
           }
         }, true);
-      }],
+      }]
     };
   })
   .filter('whereMulti', function() {

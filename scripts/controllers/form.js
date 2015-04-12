@@ -19,11 +19,11 @@ angular.module('lightApp').controller('formCtrl', ['$scope', '$routeParams', '$h
 
     $http.post('http://www.networknt.com/api/rs', getFormPost)
         .success(function(result, status, headers, config) {
-            //$scope.schema = result.schema;
-            //console.log('schema = ', $scope.schema);
-            //$scope.form = result.form;
-            // console.log('form = ', $scope.form);
-            // $scope.action = result.action;
+            $scope.schema = result.schema;
+            console.log('schema = ', $scope.schema);
+            $scope.form = result.form;
+            console.log('form = ', $scope.form);
+            $scope.action = result.action;
             console.log('action = ', $scope.action);
             $scope.schemaJson = JSON.stringify($scope.schema, undefined, 2);
             $scope.formJson = JSON.stringify($scope.form, undefined, 2);
