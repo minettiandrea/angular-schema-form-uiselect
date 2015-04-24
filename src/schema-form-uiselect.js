@@ -58,8 +58,6 @@ angular.module('schemaForm').config(
       controller: ['$scope', function($scope)  {
         //watch the model for external changes, two-way binding. And also check for schema items, when async items could came later
         $scope.$parent.$watch('[model.'+$scope.$parent.form.key[0]+',form.schema.items]',function(){
-          console.log("select_model.selected watch");
-          
           //find the item correspoding to selection
           var value = _.find($scope.$parent.form.schema.items, function(i) { 
             return i.value == $scope.$parent.model[$scope.$parent.form.key[0]]
