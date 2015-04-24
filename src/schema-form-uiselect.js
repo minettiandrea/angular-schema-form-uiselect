@@ -56,12 +56,22 @@ angular.module('schemaForm').config(
       scope: {},
       replace: true,
       controller: ['$scope', function($scope)  {
-        $scope.$parent.$watch('select_model.selected',function(){
-          if($scope.$parent.select_model.selected != undefined) {
-            $scope.$parent.insideModel = $scope.$parent.select_model.selected.value;
-            $scope.$parent.ngModel.$setViewValue($scope.$parent.select_model.selected.value);
+        //watch the model for external changes, two-way binding. And also check for schema items, when async items could came later
+        $scope.$parent.$watch('[model.'+$scope.$parent.form.key[0]+',form.schema.items]',function(){
+          console.log("select_model.selected watch");
+          
+          //find the item correspoding to selection
+          var value = _.find($scope.$parent.form.schema.items, function(i) { 
+            return i.value == $scope.$parent.model[$scope.$parent.form.key[0]]
+          });
+          
+          //force label to model item
+          if(value && value.label != undefined) {
+            $scope.$parent.select_model = { selected: {label: value.label}};
+            $scope.$parent.insideModel = value.label;
+            $scope.$parent.ngModel.$setViewValue(value.label);
           }
-        });
+        },true);
       }]
     };
   })
